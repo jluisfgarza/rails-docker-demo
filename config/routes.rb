@@ -15,4 +15,6 @@ Rails.application.routes.draw do
 
   resources :posts
   resources :users, only: [:index, :show]
+
+  root to: 'posts#index'
 end

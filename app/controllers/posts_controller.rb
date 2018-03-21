@@ -1,42 +1,51 @@
-class PostsController < ApplicationApiController
-  deserializable_resource :post, class: DeserializablePost, only: [:create, :update]
-  before_action :authorize_client!, only: [:create, :update, :destroy]
+class PostsController < ApplicationController
+  before_action :authenticate_user!
 
-  before_action :set_post, only: [:show, :update, :destroy]
+  before_action :set_post, only: [:show, :edit, :update, :destroy]
 
   # GET /posts
   def index
-    @posts, scope_size = scope_and_page_size_from Post.all
-
-    render jsonapi: @posts,
-           include: include_params,
-           links: generate_page_links(:posts_url, scope_size)
+    @posts = Post.all
   end
 
   # GET /posts/1
   def show
-    render jsonapi: @post
+  end
+
+  # GET /posts/new
+  def new
+    @post = Post.new
+  end
+
+  # GET /posts/1/edit
+  def edit
   end
 
   # POST /posts
   def create
-    @post = Post.new post_params.merge author: current_user
+    @post = Post.new(post_params)
+    @post.author = current_user
 
-    return render jsonapi: @post, status: :created if @post.save
-    render jsonapi_errors: @post.errors, status: :unprocessable_entity
+    if @post.save
+      redirect_to @post, notice: 'Post was successfully created.'
+    else
+      render :new
+    end
   end
 
   # PATCH/PUT /posts/1
   def update
-    raise ActionErrors::Forbidden unless @post.author == current_user
-    return render jsonapi: @post if @post.update(post_params)
-    render jsonapi_errors: @post.errors, status: :unprocessable_entity
+    if @post.update(post_params)
+      redirect_to @post, notice: 'Post was successfully updated.'
+    else
+      render :edit
+    end
   end
 
   # DELETE /posts/1
   def destroy
-    raise ActionErrors::Forbidden unless @post.author == current_user
     @post.destroy
+    redirect_to posts_url, notice: 'Post was successfully destroyed.'
   end
 
   private
@@ -48,14 +57,5 @@ class PostsController < ApplicationApiController
     # Only allow a trusted parameter "white list" through.
     def post_params
       params.require(:post).permit(:body)
-    end
-
-    def scope_and_page_size_from(initial_scope)
-      scope = initial_scope
-      size = scope.count
-
-      scope = scope.includes(:author) if include_params.include? 'author'
-
-      [scope, size]
     end
 end
