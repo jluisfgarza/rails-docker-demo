@@ -70,4 +70,7 @@ services:
       # Override the URL for the development database - we'll use oauth_provider_development:
       DATABASE_URL: postgres://postgres:3x4mpl3@postgres:5432/demo_development
       RAILS_ENV: development
+      DB_HOST: host
+      DB_USER: user
+      DB_PASSWORD: password
       RACK_ENV: development
