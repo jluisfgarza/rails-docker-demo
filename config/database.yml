@@ -39,3 +39,6 @@ test:
 production:
   <<: *default
   min_messages: notice
+  host: <%= ENV.fetch('DB_HOST') %>
+  username: <%= ENV.fetch('DB_USER') %>
+  password: <%= ENV.fetch('DB_PASSWORD') %>

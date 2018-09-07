@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:10-alpine
+    ports:
+      # We'll bind our host's port 5432 to postgres's port 5432, so we can use our database IDEs
+      # with it:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data      # Mount the postgres data volume
+    networks:
+      - backend
+    environment:
+      POSTGRES_PASSWORD: 3x4mpl3
+
+  web:
+    image: kurenn/rails-demo:latest
+    ports:
+      - 80:3000
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://postgres:3x4mpl3@postgres:5432/demo_production
+      RAILS_ENV: production
+      RACK_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+      SECRET_KEY_BASE: 54ff59e140875d252e499c094aa98e41dda548d075d2fb5ba481667a061052276028d3e785d37ce0a39d67f95ea5a40d87470f8c0d9a8f4239008b5aec2f01820
+
+networks:
+  backend:
+
+volumes:
+  db-data:

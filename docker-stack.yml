@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:10-alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    environment:
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - 5432:5432
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+  migration:
+    image: kurenn/rails-demo:v1
+    command: rails db:create db:migrate
+    networks:
+      - backend
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - SECRET_KEY_BASE=662c91e55c19ffc725d6164740645eb6886aea54dc86f8887e9d0784d4cb697f7871f4494417dcc66dd1e600eff196eefc5c4c1e4cc7112e80149060fe31e6fc
+  web:
+    image: kurenn/rails-demo:v1
+    ports:
+      - 3000:3000
+    networks:
+      - backend
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - SECRET_KEY_BASE=662c91e55c19ffc725d6164740645eb6886aea54dc86f8887e9d0784d4cb697f7871f4494417dcc66dd1e600eff196eefc5c4c1e4cc7112e80149060fe31e6fc
+    deploy:
+      replicas: 4
+      update_config:
+        parallelism: 2
+      restart_policy:
+        condition: on-failure
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  backend:
+
+volumes:
+  db-data:
