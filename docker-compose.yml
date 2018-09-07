@@ -13,7 +13,8 @@ services:
     ports:
       # We'll bind our host's port 5432 to postgres's port 5432, so we can use our database IDEs
       # with it:
-      - ${DEMO_POSTGRES_PORT:-5432}:5432
+      - published: ${DEMO_POSTGRES_PORT:-5432}
+        target: 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data      # Mount the postgres data volume
     networks:
@@ -62,7 +63,8 @@ services:
       com.icalialabs.plis.group: demo backend
     command: rails server -p 3000 -b 0.0.0.0
     ports:
-      - ${DEMO_WEB_PORT:-3000}:3000
+      - published: ${DEMO_WEB_PORT:-3000}
+        target: 3000
     environment:
       <<: *app_env
       # Override the URL for the development database - we'll use oauth_provider_development:

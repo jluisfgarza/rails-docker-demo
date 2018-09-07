@@ -1,5 +1,5 @@
 # 1: Use ruby 2.4.3 as base:
-FROM ruby:2.4.3-alpine3.7
+FROM ruby:2.5.1-alpine3.7 AS runtime
 
 # 2: We'll set the application path as the working directory
 WORKDIR /usr/src
@@ -31,6 +31,8 @@ RUN set -ex && apk add --no-cache \
   chromium \
   chromium-chromedriver \
   nodejs
+
+RUN apk add --update bash && rm -rf /var/cache/apk/*
 
 # 8: Copy the project's Gemfile + lock:
 ADD Gemfile* /usr/src/
